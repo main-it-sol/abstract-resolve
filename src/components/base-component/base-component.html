@@ -1,0 +1,25 @@
+
+<div>
+  <h1>
+    {{concreteClass.moduleName}}
+  </h1>
+  
+</div>
+<!-- The AG Grid component -->
+<div >
+  <ag-grid-angular
+  id="agGrid"
+  #agGrid
+  class="ag-theme-quartz"
+  [rowHeight]="concreteClass.rowHeight"
+  [style]="concreteClass.style"
+  [pagination]=true
+  [rowData]="rowData"
+  [defaultColDef]="concreteClass.defaultColDef"
+  [enableCellTextSelection]="true"
+  [columnDefs]="colDefs"
+  [getRowStyle]="concreteClass.getRowStyle"
+  (gridReady)="onGridReady($event)"
+  >
+  </ag-grid-angular>
+</div>
