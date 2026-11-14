@@ -7,8 +7,12 @@
 </div>
 <app-menu-component [concreteClass]="concreteClass" [gridApi]="gridApi" />
 
+@if (errorMessage()) {
+  <p role="alert">{{ errorMessage() }}</p>
+}
+
 <!-- The AG Grid component -->
-<div >
+<div [attr.aria-busy]="loading()">
   <ag-grid-angular
   id="agGrid"
   #agGrid
@@ -17,6 +21,7 @@
   [style]="concreteClass.style"
   [pagination]=true
   [rowData]="rowData"
+  [loading]="loading()"
   [defaultColDef]="concreteClass.defaultColDef"
   [enableCellTextSelection]="true"
   [columnDefs]="colDefs"

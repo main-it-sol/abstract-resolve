@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Observable, of } from "rxjs";
+import { delay, Observable, of } from "rxjs";
 
 
 @Injectable({
@@ -73,7 +73,8 @@ export class UserService {
         environmentName: "Staging"
       }
     ];
-    return of(mockData);
+    // ponytail: demo-only latency; remove the delays when using the real backend.
+    return of(mockData).pipe(delay(1000));
   }
  
   getAllUsersData(): Observable<any> {
@@ -140,6 +141,6 @@ export class UserService {
         numberOfSeats: 2
       }
     ];
-    return of(mockData);
+    return of(mockData).pipe(delay(1000));
   }
 }

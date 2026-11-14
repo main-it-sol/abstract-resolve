@@ -1,4 +1,6 @@
-import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
+import { Component, DestroyRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { defer, finalize, take } from 'rxjs';
 import { AgGridAngular } from "ag-grid-angular";
 import { AllCommunityModule, ColDef, GridApi, ModuleRegistry } from "ag-grid-community";
 import { AbstractClass } from '../../abstract-class';
@@ -15,6 +17,9 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 })
 export class BaseComponent implements OnInit {
 
+  private readonly destroyRef = inject(DestroyRef);
+  readonly loading = signal(false);
+  readonly errorMessage = signal('');
   gridApi?: GridApi;
   rowData: any[] = [];
   concreteClass!: AbstractClass;
@@ -39,9 +44,20 @@ export class BaseComponent implements OnInit {
     document.getElementById('agGrid')!.style.height = this.concreteClass.screenHeight - 240 + "px";
     this.gridApi = params.api;
     
-    this.concreteClass.getData(params).subscribe((data: any[]) => {
-      this.rowData = data;
-      this.gridApi?.sizeColumnsToFit();
+    this.loading.set(true);
+    this.errorMessage.set('');
+    defer(() => this.concreteClass.getData(params)).pipe(
+      take(1),
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.loading.set(false)),
+    ).subscribe({
+      next: (data: any[]) => {
+        this.rowData = data;
+        this.gridApi?.sizeColumnsToFit();
+      },
+      error: () => {
+        this.errorMessage.set('Unable to load data. Please try again.');
+      },
     });
   }
   
