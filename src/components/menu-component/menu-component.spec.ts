@@ -49,4 +49,38 @@ describe('MenuComponent', () => {
     expect(exportUsers).toHaveBeenCalledTimes(1);
     fixture.destroy();
   });
+
+  it('shows the Users-only mode selector, binds its state, and calls the Users handler', async () => {
+    TestBed.configureTestingModule({ imports: [MenuComponent] });
+    const fixture = TestBed.createComponent(MenuComponent);
+    const users = new ConcreteClassUsers(new UserService());
+    const onModeChange = spyOn(users, 'onModeChange').and.callThrough();
+    const radios = (): HTMLInputElement[] => Array.from(fixture.nativeElement.querySelectorAll('input[type="radio"]'));
+
+    fixture.componentRef.setInput('concreteClass', users);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(radios().map(radio => radio.value)).toEqual(['CTV', 'Mobile App']);
+    expect(radios()[0].checked).toBeTrue();
+    expect(radios().every(radio => !radio.disabled)).toBeTrue();
+
+    radios()[1].click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(users.selectedMode).toBe('Mobile App');
+    expect(onModeChange).toHaveBeenCalledTimes(1);
+
+    users.selectorDisabled = true;
+    fixture.detectChanges();
+    expect(radios().every(radio => radio.disabled)).toBeTrue();
+    radios()[0].click();
+    expect(users.selectedMode).toBe('Mobile App');
+    expect(onModeChange).toHaveBeenCalledTimes(1);
+
+    fixture.componentRef.setInput('concreteClass', new ConcreteClassHome(new UserService()));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('mat-radio-group')).toBeNull();
+    fixture.destroy();
+  });
 });

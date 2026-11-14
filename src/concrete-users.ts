@@ -1,9 +1,21 @@
 import { Observable } from "rxjs";
-import { AbstractClass, MenuItem } from "./abstract-class";
+import { AbstractClass, MenuItem, MenuModeSelector } from "./abstract-class";
 import { ColDef, GridApi } from "ag-grid-community";
 import { UserService } from "./services/user.service";
 
 export class ConcreteClassUsers extends AbstractClass {
+    selectorDisabled = false;
+    selectedMode: string = 'CTV';
+    seasons = ['CTV', 'Mobile App'];
+
+    override getModeSelector(): MenuModeSelector {
+      return this;
+    }
+
+    onModeChange(): void {
+      // ponytail: selection state only; add mode-specific loading here when its behavior is defined.
+    }
+
     override getMenuItems(): MenuItem[] {
       return [
         ...super.getMenuItems(),

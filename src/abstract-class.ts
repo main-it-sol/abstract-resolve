@@ -7,6 +7,13 @@ export interface MenuItem {
     execute: (gridApi: GridApi) => void;
 }
 
+export interface MenuModeSelector {
+    selectorDisabled: boolean;
+    selectedMode: string;
+    seasons: string[];
+    onModeChange(): void;
+}
+
 export abstract class AbstractClass {
     /**
      * The template method defines the skeleton of an algorithm.
@@ -43,6 +50,10 @@ export abstract class AbstractClass {
     }
 
     
+
+    public getModeSelector(): MenuModeSelector | undefined {
+        return undefined;
+    }
 
     public getMenuItems(): MenuItem[] {
         return [
