@@ -1,6 +1,12 @@
 import { ColDef, GridApi} from 'ag-grid-community';
 import { Observable } from 'rxjs';
 
+export interface MenuItem {
+    label: string;
+    icon: string;
+    execute: (gridApi: GridApi) => void;
+}
+
 export abstract class AbstractClass {
     /**
      * The template method defines the skeleton of an algorithm.
@@ -37,6 +43,21 @@ export abstract class AbstractClass {
     }
 
     
+
+    public getMenuItems(): MenuItem[] {
+        return [
+            {
+                label: 'Clear all filters',
+                icon: 'filter_alt_off',
+                execute: gridApi => this.resetAllFilters(gridApi),
+            },
+            {
+                label: 'Export to CSV',
+                icon: 'download',
+                execute: gridApi => this.exportToCsv(gridApi),
+            },
+        ];
+    }
 
     public resetAllFilters(gridApi:GridApi) {
         gridApi.setFilterModel(null);

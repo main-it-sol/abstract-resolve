@@ -1,9 +1,24 @@
 import { Observable } from "rxjs";
-import { AbstractClass } from "./abstract-class";
-import {  ColDef } from "ag-grid-community";
+import { AbstractClass, MenuItem } from "./abstract-class";
+import { ColDef, GridApi } from "ag-grid-community";
 import { UserService } from "./services/user.service";
 
 export class ConcreteClassUsers extends AbstractClass {
+    override getMenuItems(): MenuItem[] {
+      return [
+        ...super.getMenuItems(),
+        {
+          label: 'Export users',
+          icon: 'group',
+          execute: gridApi => this.exportUsers(gridApi),
+        },
+      ];
+    }
+
+    exportUsers(gridApi: GridApi): void {
+      gridApi.exportDataAsCsv({ fileName: 'users.csv', allColumns: true });
+    }
+
     override getTableDefinition(): ColDef<any, any>[] {
       let colDefs: ColDef[] = [
         { 

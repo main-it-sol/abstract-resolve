@@ -3,18 +3,19 @@ import { AgGridAngular } from "ag-grid-angular";
 import { AllCommunityModule, ColDef, GridApi, ModuleRegistry } from "ag-grid-community";
 import { AbstractClass } from '../../abstract-class';
 import { ActivatedRoute } from '@angular/router';
+import { MenuComponent } from '../menu-component/menu-component';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 @Component({
   selector: 'app-base-component',
-  imports: [ AgGridAngular],
+  imports: [AgGridAngular, MenuComponent],
   templateUrl: './base-component.html',
   styleUrl: './base-component.scss'
 })
 export class BaseComponent implements OnInit {
 
-  private gridApi!: GridApi;
+  gridApi?: GridApi;
   rowData: any[] = [];
   concreteClass!: AbstractClass;
   colDefs: ColDef[] = [];
@@ -22,7 +23,7 @@ export class BaseComponent implements OnInit {
 
   @HostListener('window:resize', ['$event'])
   onWindowResize(event: Event) {
-    this.gridApi.sizeColumnsToFit();
+    this.gridApi?.sizeColumnsToFit();
   }
 
   constructor(private route: ActivatedRoute) {}
@@ -40,7 +41,7 @@ export class BaseComponent implements OnInit {
     
     this.concreteClass.getData(params).subscribe((data: any[]) => {
       this.rowData = data;
-      this.gridApi.sizeColumnsToFit();
+      this.gridApi?.sizeColumnsToFit();
     });
   }
   
