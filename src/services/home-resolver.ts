@@ -1,15 +1,12 @@
-import { Injectable } from "@angular/core";
-import { AbstractClass } from "../abstract-class";
-import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from "@angular/router";
-import { ConcreteClassHome } from "../concrete-home";
-import { UserService } from "./user.service";
+import { Injectable } from '@angular/core';
+import { Resolve } from '@angular/router';
+import { HomeTableSource } from '../concrete-home';
+import { TableSource } from '../table-source';
+import { DashboardRow, UserService } from './user.service';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class HomeResolver implements Resolve<AbstractClass>{
-    constructor(private userService: UserService) {}
-  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): AbstractClass {
-    return new ConcreteClassHome(this.userService);
-  }
+@Injectable({ providedIn: 'root' })
+export class HomeResolver implements Resolve<TableSource<DashboardRow>> {
+  constructor(private readonly userService: UserService) {}
+
+  resolve(): TableSource<DashboardRow> { return new HomeTableSource(this.userService); }
 }

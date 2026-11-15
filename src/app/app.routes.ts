@@ -1,21 +1,22 @@
 import { Routes } from '@angular/router';
-import { BaseComponent } from '../components/base-component/base-component';
+import { HomePage } from '../pages/home-page';
+import { UsersPage } from '../pages/users-page';
 import { HomeResolver } from '../services/home-resolver';
 import { UsersResolver } from '../services/users-resolver';
 
 export const routes: Routes = [
     { 
         path: 'home', 
-        component: BaseComponent,
+        component: HomePage,
         resolve: {
-            concreteClass: HomeResolver
+            tableSource: HomeResolver
         }
      },
      { 
         path: 'users', 
-        component: BaseComponent,
+        component: UsersPage,
         resolve: {
-            concreteClass: UsersResolver
+            tableSource: UsersResolver
         }
      },
     { path: '**', redirectTo: 'home', pathMatch: 'full' },
