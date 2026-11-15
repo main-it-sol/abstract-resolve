@@ -1,0 +1,52 @@
+<h1>Users</h1>
+<div class="users-controls">
+  <app-menu-component [actions]="actions" [gridApi]="gridApi()" label="Users actions" />
+  <mat-radio-group class="mode-selector" aria-label="User mode" [disabled]="selectorDisabled" [(ngModel)]="selectedMode">
+    @for (mode of modes; track mode) {
+      <mat-radio-button [value]="mode">{{ mode }}</mat-radio-button>
+    }
+  </mat-radio-group>
+</div>
+<app-base-component [source]="source" (ready)="gridApi.set($event)" />
+<button #addUserButton matButton="filled" class="add-user" type="button" [disabled]="!gridApi()"
+        [attr.aria-expanded]="adding()" [attr.aria-controls]="adding() ? 'add-user-form' : null" (click)="openForm()">
+  <mat-icon aria-hidden="true">add</mat-icon>Add user
+</button>
+<p>Demo only: additions survive navigation but reset on browser refresh. They do not create login accounts.</p>
+@if (adding()) {
+  <form id="add-user-form" [formGroup]="form" (ngSubmit)="saveUser()" aria-labelledby="add-user-heading">
+    <h2 id="add-user-heading">Add user</h2>
+    <mat-form-field appearance="outline">
+      <mat-label>Name</mat-label>
+      <input #nameInput matInput formControlName="userName" autocomplete="name" required>
+      @if (form.controls.userName.invalid) { <mat-error>Enter a name, not just spaces.</mat-error> }
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" formControlName="userEmail" autocomplete="email" required>
+      @if (form.controls.userEmail.hasError('duplicate')) {
+        <mat-error>A user with this email already exists.</mat-error>
+      } @else if (form.controls.userEmail.invalid) {
+        <mat-error>Enter a valid email address.</mat-error>
+      }
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Role</mat-label>
+      <select matNativeControl formControlName="userRole" required>
+        @for (role of roles; track role) { <option [value]="role">{{ role }}</option> }
+      </select>
+      @if (form.controls.userRole.invalid) { <mat-error>Choose a role.</mat-error> }
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Number of seats</mat-label>
+      <input matInput type="number" formControlName="numberOfSeats" min="0" step="1" required>
+      @if (form.controls.numberOfSeats.invalid) { <mat-error>Enter a non-negative whole number.</mat-error> }
+    </mat-form-field>
+    @if (formError()) { <p class="form-error" role="alert">{{ formError() }}</p> }
+    <div class="form-actions">
+      <button matButton="filled" type="submit">Save</button>
+      <button matButton type="button" (click)="cancel()">Cancel</button>
+    </div>
+  </form>
+}
+<p role="status" aria-live="polite">{{ status() }}</p>

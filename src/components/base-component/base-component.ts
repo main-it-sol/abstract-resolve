@@ -1,64 +1,63 @@
-import { Component, DestroyRef, HostListener, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, HostListener, inject, input, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { defer, finalize, take } from 'rxjs';
-import { AgGridAngular } from "ag-grid-angular";
-import { AllCommunityModule, ColDef, GridApi, ModuleRegistry } from "ag-grid-community";
-import { AbstractClass } from '../../abstract-class';
-import { ActivatedRoute } from '@angular/router';
-import { MenuComponent } from '../menu-component/menu-component';
+import { defer, finalize, Subscription, take } from 'rxjs';
+import { AgGridAngular } from 'ag-grid-angular';
+import { AllCommunityModule, ColDef, GridApi, GridReadyEvent, ModuleRegistry } from 'ag-grid-community';
+import { TableSource } from '../../table-source';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 @Component({
   selector: 'app-base-component',
-  imports: [AgGridAngular, MenuComponent],
+  imports: [AgGridAngular],
   templateUrl: './base-component.html',
-  styleUrl: './base-component.scss'
 })
-export class BaseComponent implements OnInit {
-
-  private readonly destroyRef = inject(DestroyRef);
+export class BaseComponent<T> {
+  readonly source = input.required<TableSource<T>>();
+  readonly ready = output<GridApi<T>>();
   readonly loading = signal(false);
   readonly errorMessage = signal('');
-  gridApi?: GridApi;
-  rowData: any[] = [];
-  concreteClass!: AbstractClass;
-  colDefs: ColDef[] = [];
-  @ViewChild('agGrid') agGrid: any;
+  readonly rowData = signal<T[]>([]);
+  readonly gridHeight = signal(Math.max(200, window.innerHeight - 240));
+  readonly defaultColDef: ColDef<T> = {
+    flex: 1,
+    minWidth: 150,
+    filter: true,
+    filterParams: { buttons: ['apply', 'reset'], closeOnApply: true },
+    floatingFilter: true,
+    menuTabs: ['filterMenuTab'],
+  };
+  gridApi?: GridApi<T>;
+  private readonly destroyRef = inject(DestroyRef);
+  private request?: Subscription;
 
-  @HostListener('window:resize', ['$event'])
-  onWindowResize(event: Event) {
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.gridHeight.set(Math.max(200, window.innerHeight - 240));
     this.gridApi?.sizeColumnsToFit();
   }
 
-  constructor(private route: ActivatedRoute) {}
-
-  ngOnInit(): void {
-    this.concreteClass = this.route.snapshot.data['concreteClass'];
-    this.colDefs = this.concreteClass.getTableDefinition();
-    this.concreteClass.getScreenSize();
+  onGridReady(event: GridReadyEvent<T>): void {
+    this.gridApi = event.api;
+    this.reload();
+    this.ready.emit(event.api);
   }
 
-  onGridReady(params: any) {
-    
-    document.getElementById('agGrid')!.style.height = this.concreteClass.screenHeight - 240 + "px";
-    this.gridApi = params.api;
-    
+  reload(): void {
+    if (!this.gridApi) return;
+    this.request?.unsubscribe();
     this.loading.set(true);
     this.errorMessage.set('');
-    defer(() => this.concreteClass.getData(params)).pipe(
+    this.request = defer(() => this.source().loadRows()).pipe(
       take(1),
       takeUntilDestroyed(this.destroyRef),
       finalize(() => this.loading.set(false)),
     ).subscribe({
-      next: (data: any[]) => {
-        this.rowData = data;
+      next: rows => {
+        this.rowData.set(rows);
         this.gridApi?.sizeColumnsToFit();
       },
-      error: () => {
-        this.errorMessage.set('Unable to load data. Please try again.');
-      },
+      error: () => this.errorMessage.set('Unable to load data. Please try again.'),
     });
   }
-  
 }

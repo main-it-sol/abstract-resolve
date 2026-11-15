@@ -1,32 +1,20 @@
-
-<div>
-  <h1>
-    {{concreteClass.moduleName}}
-  </h1>
-  
-</div>
-<app-menu-component [concreteClass]="concreteClass" [gridApi]="gridApi" />
-
 @if (errorMessage()) {
   <p role="alert">{{ errorMessage() }}</p>
+  <button type="button" (click)="reload()">Retry loading</button>
 }
-
-<!-- The AG Grid component -->
 <div [attr.aria-busy]="loading()">
   <ag-grid-angular
-  id="agGrid"
-  #agGrid
-  class="ag-theme-quartz"
-  [rowHeight]="concreteClass.rowHeight"
-  [style]="concreteClass.style"
-  [pagination]=true
-  [rowData]="rowData"
-  [loading]="loading()"
-  [defaultColDef]="concreteClass.defaultColDef"
-  [enableCellTextSelection]="true"
-  [columnDefs]="colDefs"
-  [getRowStyle]="concreteClass.getRowStyle"
-  (gridReady)="onGridReady($event)"
-  >
-  </ag-grid-angular>
+    class="ag-theme-quartz"
+    [style.height.px]="gridHeight()"
+    style="width:100%"
+    [rowHeight]="50"
+    [pagination]="true"
+    [rowData]="rowData()"
+    [loading]="loading()"
+    [defaultColDef]="defaultColDef"
+    [enableCellTextSelection]="true"
+    [columnDefs]="source().columns"
+    [rowStyle]="source().rowStyle"
+    (gridReady)="onGridReady($event)"
+  />
 </div>

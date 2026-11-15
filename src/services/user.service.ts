@@ -1,6 +1,11 @@
 import { Injectable } from "@angular/core";
-import { delay, Observable, of } from "rxjs";
+import { delay, defer, Observable, of } from "rxjs";
+import { FormControl, Validators } from '@angular/forms';
 
+export const USER_ROLES = ['Admin', 'User', 'Manager'] as const;
+export type UserRole = typeof USER_ROLES[number];
+export type User = { userName: string; userEmail: string; userRole: UserRole; numberOfSeats: number };
+export type DashboardRow = { seatName: string; sourceId: string; sourceName: string; environmentName: string };
 
 @Injectable({
   providedIn: 'root',
@@ -9,8 +14,8 @@ export class UserService {
   constructor() {}
 
   getDashboardReport(
-    ): Observable<any> {
-    // Mock data based on colDefs in ConcreteClassHome
+    ): Observable<DashboardRow[]> {
+    // Mock dashboard data.
     const mockData = [
       {
         seatName: "Alpha",
@@ -77,9 +82,8 @@ export class UserService {
     return of(mockData).pipe(delay(1000));
   }
  
-  getAllUsersData(): Observable<any> {
-    // Mock data based on colDefs in ConcreteClassUsers
-    const mockData = [
+  // ponytail: session-only demo storage; replace with a backend when persistence is required.
+  private users: User[] = [
       {
         userName: "Alice Smith",
         userEmail: "alice.smith@example.com",
@@ -141,6 +145,24 @@ export class UserService {
         numberOfSeats: 2
       }
     ];
-    return of(mockData).pipe(delay(1000));
+
+  getAllUsersData(): Observable<User[]> {
+    return defer(() => of(this.users.map(user => ({ ...user })))).pipe(delay(1000));
+  }
+
+  emailExists(email: string): boolean {
+    return this.users.some(user => user.userEmail.toLowerCase() === email.trim().toLowerCase());
+  }
+
+  addUser(user: User): void {
+    const userName = user.userName.trim();
+    const userEmail = user.userEmail.trim();
+    const email = new FormControl(userEmail, [Validators.required, Validators.email]);
+    if (!userName || email.invalid || !USER_ROLES.includes(user.userRole) ||
+        !Number.isSafeInteger(user.numberOfSeats) || user.numberOfSeats < 0) {
+      throw new Error('Invalid user details.');
+    }
+    if (this.emailExists(userEmail)) throw new Error('A user with this email already exists.');
+    this.users = [...this.users, { ...user, userName, userEmail }];
   }
 }

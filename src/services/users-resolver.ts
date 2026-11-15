@@ -1,15 +1,12 @@
-import { Injectable } from "@angular/core";
-import { AbstractClass } from "../abstract-class";
-import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from "@angular/router";
-import { UserService } from "./user.service";
-import { ConcreteClassUsers } from "../concrete-users";
+import { Injectable } from '@angular/core';
+import { Resolve } from '@angular/router';
+import { UsersTableSource } from '../concrete-users';
+import { TableSource } from '../table-source';
+import { User, UserService } from './user.service';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class UsersResolver implements Resolve<AbstractClass>{
-    constructor(private userService: UserService) {}
-  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): AbstractClass {
-    return new ConcreteClassUsers(this.userService);
-  }
+@Injectable({ providedIn: 'root' })
+export class UsersResolver implements Resolve<TableSource<User>> {
+  constructor(private readonly userService: UserService) {}
+
+  resolve(): TableSource<User> { return new UsersTableSource(this.userService); }
 }
